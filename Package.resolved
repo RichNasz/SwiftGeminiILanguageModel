@@ -1,0 +1,33 @@
+{
+  "originHash" : "7992c2b8050d9ae81b240dbd4b3b661a0efb90ddf77aa0ca74d2b85c6a132b62",
+  "pins" : [
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "revision" : "4799286537280063c85a32f09884cfbca301b1a1",
+        "version" : "602.0.0"
+      }
+    },
+    {
+      "identity" : "swiftgeminiinteractions",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RichNasz/SwiftGeminiInteractions.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "4a24286c0bd50b9949642c37a3bb1fff580896d3"
+      }
+    },
+    {
+      "identity" : "swiftllmtoolmacros",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RichNasz/SwiftLLMToolMacros",
+      "state" : {
+        "branch" : "main",
+        "revision" : "9fa3127ec5f1ee5163e451e09b48ae09d7c25fb6"
+      }
+    }
+  ],
+  "version" : 3
+}
