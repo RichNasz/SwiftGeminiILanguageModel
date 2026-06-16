@@ -2,9 +2,18 @@ import Foundation
 import FoundationModels
 import SwiftGeminiInteractions
 
+/// Provider-specific errors from the Gemini API.
+///
+/// Some Gemini errors are mapped to `LanguageModelError` for framework compatibility
+/// (rate limit, context size exceeded, timeout). These cases capture errors that
+/// don't fit the standard framework error types. Catch both `GeminiILanguageModelError`
+/// and `LanguageModelError` for full coverage.
 public enum GeminiILanguageModelError: Error, Sendable {
+	/// No API key or authentication was provided.
 	case missingCredential
+	/// HTTP error from the Gemini API with the status code and response body.
 	case apiError(statusCode: Int, message: String)
+	/// Error received during SSE streaming from the Gemini API.
 	case streamError(String)
 }
 

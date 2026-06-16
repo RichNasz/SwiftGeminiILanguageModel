@@ -11,6 +11,34 @@ SwiftGeminiILanguageModel is a Swift package providing a `LanguageModel` impleme
 **Swift:** 6.2+
 **Public types:** `GeminiInteractionsLanguageModel`, `GeminiInteractionsModel`, `AuthMode`, `GeminiILanguageModelError`
 
+## Installation
+
+### Pattern
+
+**Package.swift:**
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/RichNasz/SwiftGeminiILanguageModel.git", branch: "main"),
+]
+```
+
+Add to target:
+
+```swift
+.target(name: "YourApp", dependencies: [
+    .product(name: "SwiftGeminiILanguageModel", package: "SwiftGeminiILanguageModel"),
+]),
+```
+
+**Xcode project:**
+Add `https://github.com/RichNasz/SwiftGeminiILanguageModel.git` as a Swift Package dependency with branch rule `main`.
+
+### Pitfalls
+
+- **Requires macOS 27+ / iOS 27+** — FoundationModels is only available on these platforms. Earlier deployment targets will fail to build.
+- **Branch-based dependency** — Uses `branch: "main"`, not a version tag. Package resolution may pull different code on different days.
+
 ## Basic Usage
 
 ### Pattern
@@ -117,3 +145,37 @@ do {
 2. **Wrong platform** — Using this package without macOS 27+ / iOS 27+. FoundationModels is only available on these platforms.
 3. **Unused model** — Constructing `GeminiInteractionsLanguageModel` but not passing it to `LanguageModelSession`. The model does nothing on its own.
 4. **On-device assumptions** — Remote providers have different latency, token limits, and error patterns compared to on-device models.
+
+## Quick Reference
+
+Minimal complete example — copy and adapt:
+
+```swift
+import FoundationModels
+import SwiftGeminiILanguageModel
+
+// 1. Model identity + capabilities
+let model = GeminiInteractionsModel(
+    id: "gemini-2.5-flash",           // Gemini model identifier
+    capabilities: .init(               // defaults: samplingParams=true, toolCalling=true, others=false
+        reasoning: false,              // set true for models with thinking support
+        structuredOutput: false,       // set true for @Generable typed responses
+        imageInput: false              // set true for vision models
+    )
+)
+
+// 2. Language model with auth
+let lm = GeminiInteractionsLanguageModel(
+    name: model,                       // parameter label is "name:", type is GeminiInteractionsModel
+    auth: .apiKey("GEMINI_API_KEY"),   // or .proxied(headers: [...])
+    timeout: 60,                       // seconds, default 60
+    serviceTier: nil                   // .flex, .standard, .priority, or nil
+)
+
+// 3. Use with LanguageModelSession — identical to on-device usage
+let session = LanguageModelSession(model: lm)
+let stream = session.streamResponse(to: "Hello")
+for try await partial in stream {
+    print(partial.content)
+}
+```

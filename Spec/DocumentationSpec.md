@@ -79,9 +79,11 @@ Table of 5 flags with defaults.
 
 **Purpose:** Machine-readable patterns/pitfalls for AI tools consuming the library.
 
-**Target length:** ~100-120 lines.
+**Target length:** ~150-170 lines.
 
 **Format:** Pattern/Pitfalls per topic.
+
+**Sections:** Installation (SPM + Xcode snippets), Basic Usage, Auth Modes, Capability Flags, Error Handling, Common Mistakes, Quick Reference (complete copy-pasteable example with inline comments).
 
 ---
 
@@ -102,10 +104,29 @@ Table of 5 flags with defaults.
 - `AGENTS.md`
 - `CONTRIBUTING.md`
 
+**Modified:**
+- `Sources/` — `///` documentation comments added to all public symbols (see Section 6)
+
 **Untouched:**
 - `Spec/` (spec files are separate from documentation)
-- `Sources/` and `Tests/`
+- `Tests/`
 - `Package.swift`
+
+---
+
+## 6. Source Documentation Comments
+
+**Purpose:** Make the public API self-documenting for coding agents and IDE Quick Help.
+
+**Scope:** All public types, initializers, properties, enum cases, and methods get `///` documentation comments. Internal types (`RequestBuilder`, `EventTranslator`, `ErrorMapper` internals) do not.
+
+**Style:**
+- First line is a summary sentence
+- Use `- Parameters:`, `- Returns:`, `- Throws:` markup for initializers and methods
+- Use `- Important:` for pitfalls agents must know
+- State default values explicitly in parameter docs
+- One code example on the entry-point type (`GeminiInteractionsLanguageModel`) only
+- Keep length proportional: 1–2 lines for properties, 3–5 lines for type summaries, 5–10 lines for initializers with multiple parameters
 
 ---
 
@@ -118,3 +139,6 @@ Table of 5 flags with defaults.
 - [ ] AGENTS.md patterns match current public API signatures
 - [ ] CONTRIBUTING.md explains spec-driven workflow
 - [ ] All cross-references between files resolve
+- [ ] All public types, initializers, properties, and enum cases have `///` doc comments
+- [ ] AGENTS.md Installation section has correct SPM URL and platform requirements
+- [ ] AGENTS.md Quick Reference example uses correct API signatures and parameter labels
