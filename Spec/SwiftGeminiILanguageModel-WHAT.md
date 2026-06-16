@@ -119,7 +119,8 @@ Translates `LanguageModelExecutorGenerationRequest` into `InteractionRequest`:
 
 Translates `AsyncThrowingStream<InteractionStreamEvent>` into `LanguageModelExecutorGenerationChannel`:
 - Text deltas → response append text
-- Function call arguments → tool calls with call ID tracking
+- Function call names captured from `stepStart` events and forwarded with tool call arguments
+- Function call arguments → tool calls with call ID and name tracking
 - Thought summaries → reasoning entries (reuses entry ID across deltas)
 - Interaction completed → usage statistics
 - Error events → throw `GeminiILanguageModelError.streamError`

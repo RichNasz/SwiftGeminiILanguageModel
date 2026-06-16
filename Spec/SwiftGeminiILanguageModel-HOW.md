@@ -64,14 +64,15 @@ Maps `enabledToolDefinitions` to `InteractionTool.function` with name, descripti
 
 **State tracking:**
 - `activeFunctionCalls: [Int: String]` — maps step index to call ID
+- `functionCallNames: [Int: String]` — maps step index to function name, captured from `stepStart` events
 - `reasoningEntryID: String?` — reused across thought summary deltas
 - `sentCompletion: Bool` — ensures at least one usage update is sent
 
-**Event handling:**
+**Event handling (order matters — `stepStart` is handled first):**
+- `.stepStart("function_call", index, name)` → resets the active function call tracker for that index; captures `name` into `functionCallNames[index]` if non-nil
 - `.stepDelta(.text)` → channel `.response(.appendText)`
-- `.stepDelta(.functionCallArguments)` → channel `.toolCalls(.toolCall(.appendArguments))`; first delta for a step index triggers an initial empty-name tool call event
+- `.stepDelta(.functionCallArguments)` → channel `.toolCalls(.toolCall(.appendArguments))`; first delta for a step index triggers an initial tool call event; tool name is looked up from `functionCallNames[stepIndex]` (falls back to `""` if no name was received)
 - `.stepDelta(.thoughtSummary)` → channel `.reasoning(.appendText)`; first thought creates a new entry ID, subsequent reuse it
-- `.stepStart("function_call")` → resets the active function call tracker for that index
 - `.interactionCompleted` → channel `.response(.updateUsage)` with input/output/cached/reasoning token counts
 - `.error` → throws `GeminiILanguageModelError.streamError`
 - `.interactionCreated`, `.interactionStatusUpdate`, `.stepStop`, `.unknown` → ignored

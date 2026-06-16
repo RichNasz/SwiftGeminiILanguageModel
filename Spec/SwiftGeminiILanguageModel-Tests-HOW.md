@@ -45,10 +45,10 @@ Tests verify the `InteractionRequest` fields:
 
 Uses private helpers:
 - `makeStream(events:)` — creates `AsyncThrowingStream<InteractionStreamEvent, Error>` from an array
-- `translate(events:)` — creates `EventTranslator` with fixed entry IDs, creates a `LanguageModelExecutorGenerationChannel`, and calls `translate`
+- `translate(events:)` — creates `EventTranslator` with fixed entry IDs, creates a `LanguageModelExecutorGenerationChannel` with a drain task to consume events, and calls `translate`; the drain task is cancelled after translation completes to allow clean process exit
 - `completedInteraction(usage:)` — creates an `Interaction` fixture with optional `Usage`
 
-Tests verify that event sequences complete without throwing (success path) or throw the expected error type (error path). Channel output is not inspected — the tests verify that the translator processes events correctly without crashing or deadlocking.
+Tests verify that event sequences complete without throwing (success path) or throw the expected error type (error path). Channel output is not inspected — the tests verify that the translator processes events correctly without crashing or deadlocking. All `stepStart` events include the `name:` parameter (typically `nil` for test fixtures).
 
 ## Dependencies
 

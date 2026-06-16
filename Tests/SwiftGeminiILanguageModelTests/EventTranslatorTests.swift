@@ -28,6 +28,8 @@ struct EventTranslatorTests {
 			toolCallsEntryID: "tc-1"
 		)
 		let channel = LanguageModelExecutorGenerationChannel()
+		let drainTask = Task { for try await _ in channel {} }
+		defer { drainTask.cancel() }
 		try await translator.translate(makeStream(events: events), into: channel)
 	}
 
@@ -52,7 +54,7 @@ struct EventTranslatorTests {
 
 	@Test func textDeltaProcessedSuccessfully() async throws {
 		try await translate(events: [
-			.stepStart(stepType: "model_output", index: 0),
+			.stepStart(stepType: "model_output", index: 0, name: nil),
 			.stepDelta(.text("Hello"), stepIndex: 0),
 			.stepDelta(.text(" world"), stepIndex: 0),
 			.stepStop(index: 0),
@@ -64,7 +66,7 @@ struct EventTranslatorTests {
 
 	@Test func functionCallArgumentsProcessed() async throws {
 		try await translate(events: [
-			.stepStart(stepType: "function_call", index: 0),
+			.stepStart(stepType: "function_call", index: 0, name: nil),
 			.stepDelta(.functionCallArguments(delta: "{\"q\":", callId: "call-1"), stepIndex: 0),
 			.stepDelta(.functionCallArguments(delta: "\"test\"}", callId: "call-1"), stepIndex: 0),
 			.stepStop(index: 0),
@@ -74,8 +76,8 @@ struct EventTranslatorTests {
 
 	@Test func multipleFunctionCallsTrackedByIndex() async throws {
 		try await translate(events: [
-			.stepStart(stepType: "function_call", index: 0),
-			.stepStart(stepType: "function_call", index: 1),
+			.stepStart(stepType: "function_call", index: 0, name: nil),
+			.stepStart(stepType: "function_call", index: 1, name: nil),
 			.stepDelta(.functionCallArguments(delta: "{}", callId: "call-1"), stepIndex: 0),
 			.stepDelta(.functionCallArguments(delta: "{}", callId: "call-2"), stepIndex: 1),
 			.stepStop(index: 0),
@@ -88,7 +90,7 @@ struct EventTranslatorTests {
 
 	@Test func thoughtSummaryProcessed() async throws {
 		try await translate(events: [
-			.stepStart(stepType: "thought", index: 0),
+			.stepStart(stepType: "thought", index: 0, name: nil),
 			.stepDelta(.thoughtSummary("thinking..."), stepIndex: 0),
 			.stepStop(index: 0),
 			.interactionCompleted(completedInteraction())
@@ -97,7 +99,7 @@ struct EventTranslatorTests {
 
 	@Test func multipleThoughtSummariesReuseEntryID() async throws {
 		try await translate(events: [
-			.stepStart(stepType: "thought", index: 0),
+			.stepStart(stepType: "thought", index: 0, name: nil),
 			.stepDelta(.thoughtSummary("step 1"), stepIndex: 0),
 			.stepDelta(.thoughtSummary(" step 2"), stepIndex: 0),
 			.stepStop(index: 0),
@@ -151,7 +153,7 @@ struct EventTranslatorTests {
 		try await translate(events: [
 			.interactionCreated(completedInteraction()),
 			.interactionStatusUpdate(.completed),
-			.stepStart(stepType: "model_output", index: 0),
+			.stepStart(stepType: "model_output", index: 0, name: nil),
 			.stepStop(index: 0),
 			.interactionCompleted(completedInteraction())
 		])
@@ -170,13 +172,13 @@ struct EventTranslatorTests {
 		)
 		try await translate(events: [
 			.interactionCreated(completedInteraction()),
-			.stepStart(stepType: "model_output", index: 0),
+			.stepStart(stepType: "model_output", index: 0, name: nil),
 			.stepDelta(.text("Let me check"), stepIndex: 0),
 			.stepStop(index: 0),
-			.stepStart(stepType: "function_call", index: 1),
+			.stepStart(stepType: "function_call", index: 1, name: nil),
 			.stepDelta(.functionCallArguments(delta: "{}", callId: "call-1"), stepIndex: 1),
 			.stepStop(index: 1),
-			.stepStart(stepType: "model_output", index: 2),
+			.stepStart(stepType: "model_output", index: 2, name: nil),
 			.stepDelta(.text(" the date."), stepIndex: 2),
 			.stepStop(index: 2),
 			.interactionCompleted(completedInteraction(usage: usage))

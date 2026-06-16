@@ -37,6 +37,10 @@ Sampling and reasoning tests exist in two forms: "enabled" (flag true, parameter
 
 Service tier is a pass-through parameter, but it has three distinct states (`.flex`, `.priority`, `nil`) that must all work. The tests verify each state to prevent regressions if the `ServiceTier` enum gains new cases.
 
+## Why the Drain Task in EventTranslator Tests
+
+The `translate` helper starts a background `Task` that iterates the channel (`for try await _ in channel {}`), then cancels it after translation completes. Without a consumer, `LanguageModelExecutorGenerationChannel` retains internal async state that prevents the test process from exiting after all tests pass. The drain task gives the channel a consumer so its internal continuations resolve, and cancelling it after translation ensures cleanup.
+
 ## What's Not Tested
 
 - **Image encoding** — `cgImageToData` is a thin wrapper around `ImageIO`. Testing it would require constructing `CGImage` instances, which adds platform-specific complexity for minimal value.

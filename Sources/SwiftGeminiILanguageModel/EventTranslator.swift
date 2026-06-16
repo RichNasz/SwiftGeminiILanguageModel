@@ -20,6 +20,7 @@ struct EventTranslator: Sendable {
 		into channel: LanguageModelExecutorGenerationChannel
 	) async throws {
 		var activeFunctionCalls: [Int: String] = [:]
+		var functionCallNames: [Int: String] = [:]
 		var reasoningEntryID: String?
 		var sentCompletion = false
 
@@ -27,6 +28,14 @@ struct EventTranslator: Sendable {
 			try Task.checkCancellation()
 
 			switch event {
+			case .stepStart(let stepType, let index, let name):
+				if stepType == "function_call" {
+					activeFunctionCalls[index] = nil
+					if let name {
+						functionCallNames[index] = name
+					}
+				}
+
 			case .stepDelta(let delta, let stepIndex):
 				switch delta {
 				case .text(let text):
@@ -38,6 +47,7 @@ struct EventTranslator: Sendable {
 					)
 
 				case .functionCallArguments(let argDelta, let callId):
+					let toolName = functionCallNames[stepIndex] ?? ""
 					if activeFunctionCalls[stepIndex] == nil {
 						activeFunctionCalls[stepIndex] = callId
 						await channel.send(
@@ -45,7 +55,7 @@ struct EventTranslator: Sendable {
 								entryID: toolCallsEntryID,
 								action: .toolCall(
 									id: callId,
-									name: "",
+									name: toolName,
 									action: .appendArguments("", tokenCount: 0)
 								)
 							)
@@ -57,7 +67,7 @@ struct EventTranslator: Sendable {
 							entryID: toolCallsEntryID,
 							action: .toolCall(
 								id: callId,
-								name: "",
+								name: toolName,
 								action: .appendArguments(argDelta, tokenCount: 0)
 							)
 						)
@@ -82,11 +92,6 @@ struct EventTranslator: Sendable {
 				case .image, .codeExecutionArguments, .googleSearchQuery,
 					 .urlContextUrl, .annotation, .unknown:
 					break
-				}
-
-			case .stepStart(let stepType, let index):
-				if stepType == "function_call" {
-					activeFunctionCalls[index] = nil
 				}
 
 			case .interactionCompleted(let interaction):

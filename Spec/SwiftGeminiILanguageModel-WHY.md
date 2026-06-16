@@ -63,6 +63,14 @@ Images are re-encoded as JPEG at 0.8 compression quality before being sent to th
 
 **Rationale:** JPEG at 0.8 provides a good balance between image quality and payload size. The Gemini API accepts base64-encoded image data, so smaller payloads mean faster uploads. 0.8 quality is visually lossless for most use cases. Remote image URLs are passed through without re-encoding, since they don't need to be uploaded.
 
+## Why Function Names Are Captured From stepStart
+
+The `stepStart` event carries the function name for `function_call` steps. This name is stored in `functionCallNames` and forwarded when sending tool call events to the FoundationModels channel.
+
+**Rationale:** FoundationModels matches tool call events to registered tools by name. Sending an empty name (`""`) causes "Failed to parse generated content" errors because the framework can't resolve the tool call. The Gemini Interactions API delivers the function name on the `stepStart` event, before any argument deltas arrive, so capturing it there and forwarding it with each tool call event gives FoundationModels the information it needs.
+
+**Tradeoff:** If a `stepStart` arrives without a name (name is `nil`), the fallback is still `""`. This preserves forward compatibility — older API versions or unknown step types won't crash the translator.
+
 ## Why Empty Tool Output Falls Back to `{}`
 
 Empty tool output text is replaced with `"{}"` in the function result step.
